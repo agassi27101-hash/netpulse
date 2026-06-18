@@ -1,0 +1,23 @@
+{
+  "name": "netpulse",
+  "version": "1.0.0",
+  "description": "Self-hosted network monitoring — ping/SNMP uptime checks, bandwidth graphs, alerting, and topology maps.",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.3.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "net-snmp": "^3.11.2",
+    "nodemailer": "^6.9.13",
+    "ping": "^0.4.4",
+    "socket.io": "^4.7.5"
+  }
+}
