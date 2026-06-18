@@ -6,14 +6,14 @@
 import { initSocket, isConnected, subscribe } from './socket.js';
 import * as overviewView from './views/overview.js';
 import * as devicesView from './views/devices.js';
-import * as topologyView from './views/topology.js';
+import * as metricsView from './views/metrics.js';
 import * as alertsView from './views/alerts.js';
 import * as settingsView from './views/settings.js';
 
 const VIEWS = {
   overview: { module: overviewView, title: 'Network Monitor' },
   devices: { module: devicesView, title: 'Network Devices' },
-  topology: { module: topologyView, title: 'Network Topology' },
+  metrics: { module: metricsView, title: 'Network Metrics' },
   alerts: { module: alertsView, title: 'Network Alerts' },
   settings: { module: settingsView, title: 'Network Settings' }
 };

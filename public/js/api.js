@@ -77,6 +77,10 @@ export async function getDashboardOverview() {
   return apiCall('GET', '/dashboard');
 }
 
+export async function getDashboardCharts() {
+  return apiCall('GET', '/dashboard/charts');
+}
+
 // ─────────────────────────────────────────────────────────────────
 // ALERTS
 // ─────────────────────────────────────────────────────────────────
