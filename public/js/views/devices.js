@@ -43,9 +43,8 @@ function setupSubscriptions() {
         renderDeviceDetail(devicesData[idx]);
       }
     } else {
-      devicesData.push(data);
-      const q = document.getElementById('deviceSearchInput')?.value || '';
-      renderDeviceTable(q);
+      // New device added - reload entire list from server to fetch full details
+      load();
     }
   });
 }
@@ -630,8 +629,6 @@ function openDeviceModal(deviceId, prefillIp = null) {
       form.snmp_community.value = device.snmp_community || 'public';
       form.snmp_port.value = device.snmp_port || 161;
       form.notes.value = device.notes || '';
-
-      document.getElementById('snmpFields').style.display = device.snmp_enabled ? 'block' : 'none';
     }
   } else {
     title.textContent = 'Add Device';
@@ -639,6 +636,9 @@ function openDeviceModal(deviceId, prefillIp = null) {
       form.ip_address.value = prefillIp;
     }
   }
+
+  // Ensure SNMP config fields visibility matches checkbox state exactly
+  document.getElementById('snmpFields').style.display = form.snmp_enabled.checked ? 'block' : 'none';
 
   modal.style.display = 'flex';
 }
