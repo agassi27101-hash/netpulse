@@ -6,7 +6,11 @@
 const API_BASE = '/api';
 
 async function apiCall(method, endpoint, body = null) {
-  const url = `${API_BASE}${endpoint}`;
+  let url = `${API_BASE}${endpoint}`;
+  if (method === 'GET') {
+    const sep = url.includes('?') ? '&' : '?';
+    url = `${url}${sep}_t=${Date.now()}`;
+  }
   const options = { method, headers: { 'Content-Type': 'application/json' } };
 
   if (body) {

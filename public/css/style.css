@@ -1305,11 +1305,15 @@ input[type="text"].search-input-mock:focus {
 }
 
 .devices-table tbody tr.active-row {
-  background-color: rgba(59, 130, 246, 0.06) !important;
+  background-color: rgba(91, 140, 255, 0.12) !important;
 }
 
 .devices-table tbody tr.active-row td {
   color: #ffffff !important;
+}
+
+.devices-table tbody tr.active-row td:first-child {
+  border-left: 3px solid #5b8cff;
 }
 
 .devices-table tbody tr:last-child td {
