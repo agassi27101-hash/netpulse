@@ -40,7 +40,7 @@ function setupSubscriptions() {
       const q = document.getElementById('deviceSearchInput')?.value || '';
       renderDeviceTable(q);
       if (selectedDeviceId === data.id) {
-        renderDeviceDetail(devicesData[idx]);
+        renderDeviceDetail(devicesData[idx], true);
       }
     } else {
       // New device added - reload entire list from server to fetch full details
@@ -259,6 +259,7 @@ function renderDeviceTable(searchQuery = '') {
   tbody.innerHTML = filtered.map((device, idx) => {
     const staggerClass = `stagger-${Math.min(idx + 1, 9)}`;
     const { color, icon } = getDeviceIconAndColor(device.device_type);
+    const activeClass = device.id === selectedDeviceId ? 'active-row' : '';
 
     let statusLabel = 'Unknown';
     if (device.status === 'up') statusLabel = 'Online';
@@ -285,7 +286,7 @@ function renderDeviceTable(searchQuery = '') {
     const locationDisplay = device.group_name && device.group_name.trim() !== '' ? device.group_name : 'Default';
 
     return `
-      <tr class="device-row ${staggerClass}" data-device-id="${device.id}">
+      <tr class="device-row ${activeClass} ${staggerClass}" data-device-id="${device.id}">
         <td>
           <div class="device-cell">
             <div class="device-icon-wrap" style="--icon-color: ${color}; --icon-glow: ${color}4d;">
@@ -336,7 +337,7 @@ function renderDeviceTable(searchQuery = '') {
   }).join('');
 }
 
-function renderDeviceDetail(device) {
+function renderDeviceDetail(device, isUpdate = false) {
   // Show detail pane, load charts
   const detailDiv = document.getElementById('deviceDetail');
   detailDiv.style.display = 'block';
@@ -346,25 +347,75 @@ function renderDeviceDetail(device) {
     contentWrapper.classList.add('has-detail');
   }
 
-  detailDiv.innerHTML = `<div class="loading">Loading device details...</div>`;
+  const detailContent = detailDiv.querySelector('.device-detail-content');
+  const isSameDevice = detailContent && detailContent.getAttribute('data-device-id') === String(device.id);
+
+  if (!isSameDevice) {
+    detailDiv.innerHTML = `<div class="loading">Loading device details...</div>`;
+  }
 
   Promise.all([
     api.getDevicePingMetrics(device.id, '24h'),
     api.getDeviceInterfaces(device.id)
   ]).then(([pingMetrics, interfaces]) => {
-    renderDetailContent(device, pingMetrics, interfaces);
+    if (selectedDeviceId === device.id) {
+      renderDetailContent(device, pingMetrics, interfaces, isSameDevice);
+    }
   }).catch(err => {
-    detailDiv.innerHTML = `<div class="error-state">Error loading: ${err.message}</div>`;
+    if (!isSameDevice) {
+      detailDiv.innerHTML = `<div class="error-state">Error loading: ${err.message}</div>`;
+    } else {
+      console.error('[devices] detail live refresh error:', err);
+    }
   });
 }
 
-function renderDetailContent(device, pingMetrics, interfaces) {
+function renderDetailContent(device, pingMetrics, interfaces, isUpdate = false) {
   const detailDiv = document.getElementById('deviceDetail');
+
+  if (isUpdate) {
+    // 1. Silent update: update DOM elements directly in the existing structure
+    const statusDot = document.getElementById('detailStatusDot');
+    if (statusDot) {
+      statusDot.className = `pulse-dot pulse-dot-lg ${getStatusClass(device.status)}`;
+    }
+
+    const statusChip = document.getElementById('detailStatusChip');
+    if (statusChip) {
+      statusChip.className = `chip ${getStatusClass(device.status)}`;
+      statusChip.textContent = device.status;
+    }
+
+    const uptimeVal = document.getElementById('detailUptimeVal');
+    if (uptimeVal && device.sys_uptime_ticks) {
+      uptimeVal.textContent = formatUptime(device.sys_uptime_ticks);
+    }
+
+    // 2. Update existing latency chart in-place smoothly
+    const canvas = document.getElementById('latencyChartCanvas');
+    if (canvas) {
+      latencyChart = createLatencyChart(canvas, pingMetrics, latencyChart);
+    }
+
+    // 3. Update existing interface charts in-place smoothly
+    if (interfaces.length > 0) {
+      interfaces.forEach((iface, idx) => {
+        api.getInterfaceMetrics(device.id, iface.id, '24h').then(metrics => {
+          const canvas = document.getElementById(`bwChart${idx}`);
+          if (canvas) {
+            bandwidthCharts[iface.id] = createBandwidthChart(canvas, metrics, bandwidthCharts[iface.id]);
+          }
+        }).catch(err => console.error('[devices] update interface chart error:', err));
+      });
+    }
+    return;
+  }
+
   detailDiv.innerHTML = `
-    <div class="device-detail-content">
+    <div class="device-detail-content" data-device-id="${device.id}">
       <div class="detail-header">
         <div class="detail-title-row">
-          <span class="pulse-dot pulse-dot-lg ${getStatusClass(device.status)}"></span>
+          <span id="detailStatusDot" class="pulse-dot pulse-dot-lg ${getStatusClass(device.status)}"></span>
           <h2>${device.name}</h2>
         </div>
         <button class="btn btn-ghost btn-sm" id="closeDetailBtn">&times;</button>
@@ -379,7 +430,7 @@ function renderDetailContent(device, pingMetrics, interfaces) {
           </div>
           <div class="info-row">
             <span class="label">Status</span>
-            <span class="value"><span class="chip ${getStatusClass(device.status)}">${device.status}</span></span>
+            <span class="value"><span id="detailStatusChip" class="chip ${getStatusClass(device.status)}">${device.status}</span></span>
           </div>
           <div class="info-row">
             <span class="label">Device Type</span>
@@ -400,7 +451,7 @@ function renderDetailContent(device, pingMetrics, interfaces) {
           ${device.sys_uptime_ticks ? `
           <div class="info-row">
             <span class="label">Uptime</span>
-            <span class="value">${formatUptime(device.sys_uptime_ticks)}</span>
+            <span id="detailUptimeVal" class="value">${formatUptime(device.sys_uptime_ticks)}</span>
           </div>
           ` : ''}
         </div>
@@ -443,6 +494,7 @@ function renderDetailContent(device, pingMetrics, interfaces) {
         const contentWrapper = document.querySelector('.devices-content');
         if (contentWrapper) contentWrapper.classList.remove('has-detail');
         selectedDeviceId = null;
+        renderDeviceTable(document.getElementById('deviceSearchInput')?.value || '');
       });
     }
   }, 0);
@@ -491,31 +543,41 @@ function attachEventListeners() {
     });
   }
 
-  // Device table actions (using closest to handle clicks on SVG icon elements)
+  // Device table actions (using closest to handle clicks on SVG icon elements or row clicks)
   document.getElementById('devicesTableBody').addEventListener('click', (e) => {
     const actionBtn = e.target.closest('[data-action]');
-    if (!actionBtn) return;
-    const action = actionBtn.getAttribute('data-action');
-    const id = parseInt(actionBtn.getAttribute('data-id'), 10);
+    const deviceRow = e.target.closest('.device-row');
 
-    if (action === 'detail') {
+    if (actionBtn) {
+      const action = actionBtn.getAttribute('data-action');
+      const id = parseInt(actionBtn.getAttribute('data-id'), 10);
+
+      if (action === 'detail') {
+        selectedDeviceId = id;
+        const device = devicesData.find(d => d.id === id);
+        renderDeviceDetail(device);
+        renderDeviceTable(document.getElementById('deviceSearchInput')?.value || '');
+      } else if (action === 'edit') {
+        openDeviceModal(id);
+      } else if (action === 'delete') {
+        if (confirm('Delete device?')) {
+          api.deleteDevice(id).then(() => {
+            devicesData = devicesData.filter(d => d.id !== id);
+            const q = document.getElementById('deviceSearchInput')?.value || '';
+            renderDeviceTable(q);
+            document.getElementById('deviceDetail').style.display = 'none';
+            const contentWrapper = document.querySelector('.devices-content');
+            if (contentWrapper) contentWrapper.classList.remove('has-detail');
+            selectedDeviceId = null;
+          }).catch(err => alert(`Error: ${err.message}`));
+        }
+      }
+    } else if (deviceRow) {
+      const id = parseInt(deviceRow.getAttribute('data-device-id'), 10);
       selectedDeviceId = id;
       const device = devicesData.find(d => d.id === id);
       renderDeviceDetail(device);
-    } else if (action === 'edit') {
-      openDeviceModal(id);
-    } else if (action === 'delete') {
-      if (confirm('Delete device?')) {
-        api.deleteDevice(id).then(() => {
-          devicesData = devicesData.filter(d => d.id !== id);
-          const q = document.getElementById('deviceSearchInput')?.value || '';
-          renderDeviceTable(q);
-          document.getElementById('deviceDetail').style.display = 'none';
-          const contentWrapper = document.querySelector('.devices-content');
-          if (contentWrapper) contentWrapper.classList.remove('has-detail');
-          selectedDeviceId = null;
-        }).catch(err => alert(`Error: ${err.message}`));
-      }
+      renderDeviceTable(document.getElementById('deviceSearchInput')?.value || '');
     }
   });
 

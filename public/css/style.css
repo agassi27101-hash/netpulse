@@ -1304,6 +1304,14 @@ input[type="text"].search-input-mock:focus {
   background-color: rgba(59, 130, 246, 0.02);
 }
 
+.devices-table tbody tr.active-row {
+  background-color: rgba(59, 130, 246, 0.06) !important;
+}
+
+.devices-table tbody tr.active-row td {
+  color: #ffffff !important;
+}
+
 .devices-table tbody tr:last-child td {
   border-bottom: none;
 }

@@ -12,10 +12,6 @@ import { parseSqliteDate } from './format.js';
  * @returns {Chart} Chart.js Chart instance
  */
 export function createLatencyChart(canvas, metrics, existingChart = null) {
-  if (existingChart) {
-    existingChart.destroy();
-  }
-
   // Filter to only "up" pings and extract data
   const upMetrics = metrics.filter(m => m.alive);
   const labels = upMetrics.map(m => {
@@ -23,6 +19,17 @@ export function createLatencyChart(canvas, metrics, existingChart = null) {
     return date ? date.toLocaleTimeString() : '';
   });
   const data = upMetrics.map(m => m.latency_ms);
+
+  if (existingChart && existingChart.ctx.canvas === canvas) {
+    existingChart.data.labels = labels;
+    existingChart.data.datasets[0].data = data;
+    existingChart.update('none'); // silent update without animations
+    return existingChart;
+  }
+
+  if (existingChart) {
+    existingChart.destroy();
+  }
 
   const ctx = canvas.getContext('2d');
   return new Chart(ctx, {
@@ -74,10 +81,6 @@ export function createLatencyChart(canvas, metrics, existingChart = null) {
  * @returns {Chart} Chart.js Chart instance
  */
 export function createBandwidthChart(canvas, metrics, existingChart = null) {
-  if (existingChart) {
-    existingChart.destroy();
-  }
-
   const labels = metrics.map(m => {
     const date = parseSqliteDate(m.ts);
     return date ? date.toLocaleTimeString() : '';
@@ -85,6 +88,18 @@ export function createBandwidthChart(canvas, metrics, existingChart = null) {
 
   const inData = metrics.map(m => formatBpsForChart(m.in_bps));
   const outData = metrics.map(m => formatBpsForChart(m.out_bps));
+
+  if (existingChart && existingChart.ctx.canvas === canvas) {
+    existingChart.data.labels = labels;
+    existingChart.data.datasets[0].data = inData;
+    existingChart.data.datasets[1].data = outData;
+    existingChart.update('none'); // silent update without animations
+    return existingChart;
+  }
+
+  if (existingChart) {
+    existingChart.destroy();
+  }
 
   const ctx = canvas.getContext('2d');
   return new Chart(ctx, {
