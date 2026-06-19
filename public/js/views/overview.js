@@ -167,7 +167,6 @@ function renderOverview() {
 
   container.innerHTML = `
     <div class="overview-page">
-      <!-- Stat Cards Grid -->
       <div class="stat-grid">
         ${renderMetricCard({
           title: 'Bandwidth',
@@ -181,7 +180,8 @@ function renderOverview() {
           trend: 2.5,
           status: bandwidth > 90 ? 'warning' : 'healthy',
           progress: bandwidth,
-          staggerIndex: 1
+          staggerIndex: 1,
+          link: '#/metrics'
         })}
         ${renderMetricCard({
           title: 'Latency',
@@ -194,7 +194,8 @@ function renderOverview() {
           iconColor: '#f59e0b',
           trend: -1.2,
           status: latencyStatus,
-          staggerIndex: 2
+          staggerIndex: 2,
+          link: '#/metrics'
         })}
         ${renderMetricCard({
           title: 'Uptime',
@@ -206,7 +207,8 @@ function renderOverview() {
           iconGlow: 'rgba(16,185,129,0.35)',
           iconColor: '#10b981',
           status: 'healthy',
-          staggerIndex: 3
+          staggerIndex: 3,
+          link: '#/metrics'
         })}
         ${renderMetricCard({
           title: 'Packet Loss',
@@ -219,7 +221,8 @@ function renderOverview() {
           iconColor: '#22d3ee',
           trend: 0.05,
           status: packetLossStatus,
-          staggerIndex: 4
+          staggerIndex: 4,
+          link: '#/metrics'
         })}
         ${renderMetricCard({
           title: 'Active Devices',
@@ -231,7 +234,8 @@ function renderOverview() {
           iconColor: '#a78bfa',
           trend: 5.2,
           status: 'healthy',
-          staggerIndex: 5
+          staggerIndex: 5,
+          link: '#/devices'
         })}
         ${renderMetricCard({
           title: 'Active Alerts',
@@ -242,7 +246,8 @@ function renderOverview() {
           iconGlow: 'rgba(239,68,68,0.35)',
           iconColor: '#ef4444',
           status: alertStatus,
-          staggerIndex: 6
+          staggerIndex: 6,
+          link: '#/alerts'
         })}
       </div>
 
@@ -259,22 +264,30 @@ function renderOverview() {
         <div class="card">
           <div class="card-title">Device Status Summary</div>
           <div class="info-grid">
-            <div class="info-row">
-              <span class="label">Total Devices</span>
-              <span class="value" data-summary-label="total" data-count-target="${overviewData?.total || 0}" style="font-size: 20px; font-weight: 600; color: var(--text);">0</span>
-            </div>
-            <div class="info-row">
-              <span class="label">Up Percentage</span>
-              <span class="value" data-summary-label="up-percent" data-count-target="${upPercent}" data-is-percent="true" style="font-size: 20px; font-weight: 600; color: var(--up);">0%</span>
-            </div>
-            <div class="info-row">
-              <span class="label">In Maintenance</span>
-              <span class="value" data-summary-label="maintenance" data-count-target="${overviewData?.maintenance || 0}" style="font-size: 20px; font-weight: 600; color: var(--maintenance);">0</span>
-            </div>
-            <div class="info-row">
-              <span class="label">Unreachable</span>
-              <span class="value" data-summary-label="unreachable" data-count-target="${overviewData?.unreachable || 0}" style="font-size: 20px; font-weight: 600; color: var(--unreachable);">0</span>
-            </div>
+            <a href="#/devices" class="info-row-link">
+              <div class="info-row">
+                <span class="label">Total Devices</span>
+                <span class="value" data-summary-label="total" data-count-target="${overviewData?.total || 0}" style="font-size: 20px; font-weight: 600; color: var(--text);">0</span>
+              </div>
+            </a>
+            <a href="#/devices" class="info-row-link">
+              <div class="info-row">
+                <span class="label">Up Percentage</span>
+                <span class="value" data-summary-label="up-percent" data-count-target="${upPercent}" data-is-percent="true" style="font-size: 20px; font-weight: 600; color: var(--up);">0%</span>
+              </div>
+            </a>
+            <a href="#/devices" class="info-row-link">
+              <div class="info-row">
+                <span class="label">In Maintenance</span>
+                <span class="value" data-summary-label="maintenance" data-count-target="${overviewData?.maintenance || 0}" style="font-size: 20px; font-weight: 600; color: var(--maintenance);">0</span>
+              </div>
+            </a>
+            <a href="#/devices" class="info-row-link">
+              <div class="info-row">
+                <span class="label">Unreachable</span>
+                <span class="value" data-summary-label="unreachable" data-count-target="${overviewData?.unreachable || 0}" style="font-size: 20px; font-weight: 600; color: var(--unreachable);">0</span>
+              </div>
+            </a>
           </div>
         </div>
       </div>
@@ -286,7 +299,7 @@ function renderOverview() {
   setTimeout(animateProgressBars, 50);
 }
 
-function renderMetricCard({ title, value, decimals, isPercent, suffix, subValue, icon, iconGlow, iconColor, trend, status, progress, staggerIndex }) {
+function renderMetricCard({ title, value, decimals, isPercent, suffix, subValue, icon, iconGlow, iconColor, trend, status, progress, staggerIndex, link = '#' }) {
   const trendHtml = trend !== undefined 
     ? `<div class="trend-badge ${trend >= 0 ? 'up' : 'down'}">
          ${trend >= 0 ? '&uarr;' : '&darr;'} ${Math.abs(trend)}%
@@ -300,28 +313,30 @@ function renderMetricCard({ title, value, decimals, isPercent, suffix, subValue,
     : '';
 
   return `
-    <div class="card status-${status} stagger-${staggerIndex}" data-card-title="${title}" style="display: flex; flex-direction: column; gap: var(--space-2); min-height: 180px;">
-      <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
-        <div class="card-icon-wrap" style="--icon-color: ${iconColor}; --icon-glow: ${iconGlow};">
-          ${icon}
+    <a href="${link}" class="card-link">
+      <div class="card status-${status} stagger-${staggerIndex}" data-card-title="${title}" style="display: flex; flex-direction: column; gap: var(--space-2); min-height: 180px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
+          <div class="card-icon-wrap" style="--icon-color: ${iconColor}; --icon-glow: ${iconGlow};">
+            ${icon}
+          </div>
+          ${trendHtml}
         </div>
-        ${trendHtml}
-      </div>
-      
-      <div style="margin-top: auto; margin-bottom: auto;">
-        <p class="card-label-title" style="font-size: 11px; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.1em; margin-bottom: 6px;">${title}</p>
-        <p class="card-metric-value" data-count-target="${value}" data-decimals="${decimals}" data-is-percent="${isPercent}" data-suffix="${suffix || ''}" style="font-size: 28px; font-weight: 700; color: #ffffff; line-height: 1; font-family: var(--font-display);">0</p>
-      </div>
+        
+        <div style="margin-top: auto; margin-bottom: auto;">
+          <p class="card-label-title" style="font-size: 11px; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.1em; margin-bottom: 6px;">${title}</p>
+          <p class="card-metric-value" data-count-target="${value}" data-decimals="${decimals}" data-is-percent="${isPercent}" data-suffix="${suffix || ''}" style="font-size: 28px; font-weight: 700; color: #ffffff; line-height: 1; font-family: var(--font-display);">0</p>
+        </div>
 
-      <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; font-size: 12px; margin-top: 4px;">
-        <span class="card-sub-value" style="color: var(--text-faint);">${subValue}</span>
-        <div class="card-status-badge ${status}">
-          <span class="card-status-dot active-pulse"></span>
-          ${status}
+        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; font-size: 12px; margin-top: 4px;">
+          <span class="card-sub-value" style="color: var(--text-faint);">${subValue}</span>
+          <div class="card-status-badge ${status}">
+            <span class="card-status-dot active-pulse"></span>
+            ${status}
+          </div>
         </div>
+        ${progressHtml}
       </div>
-      ${progressHtml}
-    </div>
+    </a>
   `;
 }
 
