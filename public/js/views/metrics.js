@@ -218,7 +218,7 @@ function renderCharts(data) {
       pointHoverBackgroundColor: '#f59e0b',
       pointHoverBorderColor: '#ffffff',
       pointHoverBorderWidth: 1.5
-    }], 24)
+    }], null)
   );
 
   // 3. Traffic Distribution Chart
@@ -255,7 +255,7 @@ function renderCharts(data) {
         pointRadius: 0,
         pointHoverRadius: 3
       }
-    ], 100)
+    ], null)
   );
 
   // 4. Protocol Distribution Chart

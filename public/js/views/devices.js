@@ -101,21 +101,23 @@ function renderDevicesPage() {
               </div>
             </div>
           </div>
-          <table class="devices-table" id="devicesTable">
-            <thead>
-              <tr>
-                <th>Device</th>
-                <th>IP Address / URL</th>
-                <th>Status</th>
-                <th>Bandwidth</th>
-                <th>Latency</th>
-                <th>Uptime</th>
-                <th>Location</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="devicesTableBody"></tbody>
-          </table>
+          <div class="devices-table-wrap">
+            <table class="devices-table" id="devicesTable">
+              <thead>
+                <tr>
+                  <th>Device</th>
+                  <th>IP Address / URL</th>
+                  <th>Status</th>
+                  <th>Bandwidth</th>
+                  <th>Latency</th>
+                  <th>Uptime</th>
+                  <th>Location</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="devicesTableBody"></tbody>
+            </table>
+          </div>
         </div>
 
         <div class="device-detail" id="deviceDetail" style="display: none;">

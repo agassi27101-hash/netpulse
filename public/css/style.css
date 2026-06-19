@@ -1237,36 +1237,43 @@ td.ip-cell {
 
 .search-icon-svg {
   position: absolute;
-  left: 12px;
+  left: 14px;
   top: 50%;
   transform: translateY(-50%);
-  width: 14px;
-  height: 14px;
+  width: 15px;
+  height: 15px;
   color: var(--text-faint);
   stroke-width: 2.5;
   pointer-events: none;
 }
 
-.search-input-mock {
-  width: 100%;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 20px;
-  padding: 6px 12px 6px 34px;
-  font-size: 12.5px;
-  color: #ffffff;
-  outline: none;
-  transition: all 0.25s ease;
+input[type="text"].search-input-mock {
+  width: 100% !important;
+  background: rgba(255, 255, 255, 0.02) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  border-radius: 20px !important;
+  padding: 6px 12px 6px 40px !important;
+  font-size: 12.5px !important;
+  color: #ffffff !important;
+  outline: none !important;
+  transition: all 0.25s ease !important;
 }
 
-.search-input-mock:focus {
-  border-color: rgba(59, 130, 246, 0.4);
-  background: rgba(255, 255, 255, 0.04);
-  box-shadow: 0 0 10px rgba(59, 130, 246, 0.15);
+input[type="text"].search-input-mock:focus {
+  border-color: rgba(59, 130, 246, 0.4) !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.15) !important;
+}
+
+.devices-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .devices-table {
   width: 100%;
+  min-width: 950px;
   border-collapse: collapse;
 }
 
